@@ -1,0 +1,12 @@
+---
+hosts:
+  worker_1: 
+    name: ubuntu-1
+    ip: 192.168.1.6
+  worker_2:
+    name:  ubuntu-2
+    ip: 192.168.1.7
+  master:
+    name: ubuntu-3-master
+    ip: 192.168.1.9
+    

@@ -1,0 +1,8 @@
+---
+- name: Установка
+  hosts: all
+  become: true    
+  roles:
+    - role: 'ansible-roles/create_k8s_cluster'
+  vars_files:
+    - global_vars

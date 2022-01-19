@@ -1,0 +1,43 @@
+---
+####################################
+# Подготовка хоста
+####################################
+- name: Смена hostname
+  hostname:
+    name: ipa.adk
+
+- name: Добавление домена в hosts
+  lineinfile: 
+    path: /etc/hosts
+    line: '192.168.1.10 ipa.adk'
+
+####################################
+# rng-tools
+####################################
+- name: Установка rng-tools
+  apt:
+    name: rng-tools
+    state: present
+    update_cache: yes
+
+- name: Изменение rng-tools 
+  lineinfile:
+    path: /etc/default/rng-tools
+    line: 'HRNGDEVICE=/dev/urandom'
+
+- name: Добавление юнита
+  systemd:
+    name: rng-tools 
+    enabled: yes
+    daemon_reload: yes
+    state: started
+
+- name: Установка FreeIPA
+  apt:
+    pkg:
+      - freeipa-server
+      - freeipa-server-dns
+    state: present
+    update_cache: yes
+- name: soxkwwo
+  command: 'ipa-server-install  --domain ipa.adk -a 1q2w3e4r%T '

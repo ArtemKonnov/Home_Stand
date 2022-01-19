@@ -1,0 +1,67 @@
+---
+####################################
+# Подготовка хостов
+####################################
+- name: ПОДГОТОВКА |Смена hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: ПОДГОТОВКА |Добавление доменов в hosts
+  lineinfile: 
+    path: /etc/hosts
+    line: '"{{ ansible_host }}" "{{ inventory_hostname }}"'
+  
+- name: ПОДГОТОВКА |Установка пакетов
+  apt:
+    pkg: ['curl', 'apt-transport-https','git','iptables-persistent']
+    state: present
+    update_cache: yes
+  
+- name: ПОДГОТОВКА |Отключение SWAP
+  shell: swapoff -a
+  args:
+    executable: /bin/bash
+
+- name: ПОДГОТОВКА |Удаление Swap из fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+
+- name: ПОДГОТОВКА |Добавление модулей ядра
+  lineinfile:
+    path: /etc/modules-load.d/k8s.conf
+    line: "{{ item }}"
+    create: yes
+  with_items:
+    - br_netfilter
+    - overlay
+
+- name: ПОДГОТОВКА |Подключение модулей ядра
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - br_netfilter
+    - overlay
+
+- name: ПОДГОТОВКА |Добавление конфигурационного файла
+  sysctl:
+    name:  "{{ item }}"
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+  with_items:
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+
+- name: ПОДГОТОВКА |Установка docker
+  import_tasks:  'install_docker.yml'
+
+- name: ПОДГОТОВКА | Добавление /etc/docker/daemon.json
+  copy:
+    src: docker/daemon.json
+    dest: /etc/docker/daemon.json
+  notify:
+    - restart docker
