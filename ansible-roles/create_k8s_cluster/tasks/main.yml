@@ -11,7 +11,7 @@
     path: /etc/hosts
     line: '"{{ ansible_host }}" "{{ inventory_hostname }}"'
   
-- name: ПОДГОТОВКА |Установка пакетов
+- name: INSTALL |Установка пакетов
   apt:
     pkg: ['curl', 'apt-transport-https','git','iptables-persistent']
     state: present
@@ -65,3 +65,21 @@
     dest: /etc/docker/daemon.json
   notify:
     - restart docker
+
+- name: ПОДГОТОВКА |Импорт gpg key k8s
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  become: true
+
+- name: ПОДГОТОВКА |Добавление репозитория k8s
+  lineinfile:
+    path:  /etc/apt/sources.list.d/kubernetes.list
+    line: deb https://apt.kubernetes.io/ kubernetes-"{{ ansible_distribution_release }}" main
+    create: yes
+
+- name: INSTALL |Установка компонентов k8s
+  apt:
+    pkg: ['kubelet','kubeadm','kubectl']
+    state: present
+    update_cache: yes
