@@ -6,6 +6,11 @@
   hostname:
     name: "{{ inventory_hostname }}"
 
+- name: Remove file (delete file)
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    state: absent
+
 - name: ПОДГОТОВКА |Добавление доменов в hosts
   lineinfile: 
     path: /etc/hosts
@@ -68,18 +73,36 @@
 
 - name: ПОДГОТОВКА |Импорт gpg key k8s
   apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg.asc
     state: present
   become: true
 
 - name: ПОДГОТОВКА |Добавление репозитория k8s
   lineinfile:
-    path:  /etc/apt/sources.list.d/kubernetes.list
-    line: deb https://apt.kubernetes.io/ kubernetes-"{{ ansible_distribution_release }}" main
-    create: yes
+    path: /etc/apt/sources.list
+    line: deb [trusted=yes] https://apt.kubernetes.io/ kubernetes-xenial main
 
 - name: INSTALL |Установка компонентов k8s
   apt:
     pkg: ['kubelet','kubeadm','kubectl']
     state: present
     update_cache: yes
+
+- name: ПОДГОТОВКА |Hold kubeadm
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: ПОДГОТОВКА |Установка 
+  import_tasks:  'initializing_claster-master.yml'
+  when: inventory_hostname == "k8s-master-1.adk.local"
+
+- name: ПОДГОТОВКА |Установка 
+  import_tasks:  'initializing_claster-workers.yml'
+ # when: inventory_hostname | regex_search("^k8s-worker-(.*)$")
+
+

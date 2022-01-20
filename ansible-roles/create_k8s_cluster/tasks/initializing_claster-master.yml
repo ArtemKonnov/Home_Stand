@@ -1,0 +1,17 @@
+---
+  - name: ИНИЦИАЛИЗАЦИЯ КЛАСТЕРА master|Инициализация
+    shell: kubeadm init --pod-network-cidr=10.244.0.0/16 && export KUBECONFIG=/etc/kubernetes/admin.conf
+  
+  - name: ИНИЦИАЛИЗАЦИЯ КЛАСТЕРА master|Добавление переменной
+    lineinfile:
+     line: KUBECONFIG=/etc/kubernetes/admin.conf
+     path: /etc/environment
+
+  - name: ИНИЦИАЛИЗАЦИЯ КЛАСТЕРА master|Установка CNI
+    shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+  - name: ИНИЦИАЛИЗАЦИЯ КЛАСТЕРА master |Токен
+    shell: kubeadm token create --print-join-command
+    register: sh_ip_int_br_result
+
+

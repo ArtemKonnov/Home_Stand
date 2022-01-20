@@ -1,0 +1,3 @@
+---
+  - name: ИНИЦИАЛИЗАЦИЯ КЛАСТЕРА workers
+    shell: "{{ sh_ip_int_br_result.stdout_lines }}"
