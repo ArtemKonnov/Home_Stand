@@ -97,12 +97,12 @@
     - kubeadm
     - kubectl
 
-- name: ПОДГОТОВКА |Установка 
+- name: ПОДГОТОВКА |Создание и настройка кластера 
   import_tasks:  'initializing_claster-master.yml'
   when: inventory_hostname == "k8s-master-1.adk.local"
 
 - name: ПОДГОТОВКА |Установка 
   import_tasks:  'initializing_claster-workers.yml'
- # when: inventory_hostname | regex_search("^k8s-worker-(.*)$")
+  when: inventory_hostname is match('k8s-worker-.*')
 
 
